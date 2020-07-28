@@ -1,0 +1,17 @@
+name: Cron
+
+on:
+  push:
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron:  '0 6 * * *'
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Trigger build on dockerhub
+        run: curl -X POST ${{ secrets.TRIGGERURL }}

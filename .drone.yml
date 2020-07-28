@@ -1,0 +1,18 @@
+---
+kind: pipeline
+name: linux-amd64
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+  - name: publish image
+    image: plugins/docker
+    settings:
+      repo: bitsbeats/memcache-mon
+      auto_tag: true
+      username:
+        from_secret: docker_user
+      password:
+        from_secret: docker_pass
