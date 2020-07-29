@@ -31,8 +31,15 @@ python memcache-mon.py -h
 ## running via docker
 
 ```
+# pull
+docker pull bitsbeats/memcache-mon
+
+# run
 docker run -rm bitsbeats/memcache-mon -h
 
 # env example
 docker run -rm -e SLEEP=0.1 bitsbeats/memcache-mon
+
+# stable
+docker pull bitsbeats/memcache-mon:<github-tag eg. 0.0.1>
 ```
