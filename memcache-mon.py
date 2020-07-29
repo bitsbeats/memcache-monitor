@@ -13,8 +13,8 @@ parser = argparse.ArgumentParser(description="Tool to benchmark memcache speed a
                                  formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument("-mp", "--metricsport", type=int, help="port for prom metrics",
                     default=environ.get('METRICSPORT', 8000))
-parser.add_argument("-s", "--sleep", type=int, help="how long to sleep between mc requests",
-                    default=environ.get('SLEEP', 1))
+parser.add_argument("-s", "--sleep", type=float, help="how long to sleep between mc requests",
+                    default=environ.get('SLEEP', 0.5))
 parser.add_argument("-m", "--memcacheaddress", type=str,
                     default=environ.get('MEMCACHEADDRESS', "127.0.0.1"))
 parser.add_argument("-p", "--memcacheport", type=int,
