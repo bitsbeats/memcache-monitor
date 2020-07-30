@@ -3,7 +3,7 @@ import logging
 import time
 from os import environ
 from pymemcache.client import base
-from prometheus_client import Histogram, start_http_server
+from prometheus_client import Counter, Histogram, start_http_server
 
 #args
 # noinspection PyTypeChecker
@@ -23,6 +23,8 @@ parser.add_argument("-mk", "--memcachekey", type=str,
                     default=environ.get('MEMCACHEKEY', 'memcache-mon'))
 parser.add_argument("-mv", "--memcachevalue", type=str,
                     default=environ.get('MEMCACHEVALUE', "memcache-val"))
+parser.add_argument("-b", "--buckets", type=str,
+                    default=environ.get('MEMCACHEBUCKETS', "0.0001, 0.001, 0.01, 0.1, 0.2, 0.4, 0.8, 1, 2, 4, 8"))
 parser.add_argument("-v", "--verbose", action="store_true",
                     default=environ.get('MEMCACHEMONVERBOSE', False),
                     help="env: MEMCACHEMONVERBOSE")
@@ -35,32 +37,41 @@ mc = args.memcacheaddress
 p = args.memcacheport
 mk = args.memcachekey
 mv = args.memcachevalue
+b = args.buckets
 
-REQUEST_TIME_GET = Histogram('memcache_get_request_latency_seconds', 'Time in seconds a memcache '
-                                                                     'get operation takes')
+# convert buckets config string to float list
+buckets = [float(i) for i in b.split(', ')]
 
-REQUEST_TIME_SET = Histogram('memcache_set_request_latency_seconds', 'Time in seconds a memcache '
-                                                                     'set operation takes')
+# metrics
+REQUEST_TIME = Histogram('memcachemon_request_duration_seconds', 'Time in seconds a memcache '
+                            'operation takes',  ['operation', 'memcache'],
+                            buckets=buckets)
 
-# Decorate function with metric.
-@REQUEST_TIME_GET.time()
-def process_get_request(key):
-    """get value from memcache"""
+REQUEST_FAIL = Counter('memcachemon_request_failures', 'Counter for failed operations',  ['operation', 'memcache'])
+
+# labeled instances
+request_time_get = REQUEST_TIME.labels(operation="get", memcache=mc)
+request_time_set = REQUEST_TIME.labels(operation="set", memcache=mc)
+
+# get func with decorator
+@request_time_get.time()
+def memc_get(key):
     try:
         client.get(key)
     except Exception:
+        REQUEST_FAIL.labels(operation="get", memcache=mc).inc()
         logger.warning("Error on mc get")
 
-
-# Decorate function with metric.
-@REQUEST_TIME_SET.time()
-def process_set_request(key, value):
-    """set value to memcache"""
+# set func with decorator
+@request_time_set.time()
+def memc_set(key, value):
     try:
         client.set(key, value)
     except Exception:
+        REQUEST_FAIL.labels(operation="set", memcache=mc).inc()
         logger.warning("Error on mc set")
 
+# loggin stuff..
 class CustomFormatter(logging.Formatter):
     """Logging Formatter to add colors and count warning / errors"""
 
@@ -111,18 +122,17 @@ if __name__ == '__main__':
 
     logger.info("prom metrics started on port %s, configuring memcache", mp)
 
-    # configure memcache
-    client = base.Client((mc, p))
-
     logger.info("memcache configured ip: %s port: %s, starting benchmark queries.. "
                 "sleep: %s seconds",
                 mc, p, sleep_time)
 
     # Generate some requests.
     while True:
+        # configure memcache
+        client = base.Client((mc, p))
         logger.debug("mc set")
-        process_set_request(mk, mv)
+        memc_set(key=mk, value=mv)
         logger.debug("mc get")
-        process_get_request(mk)
+        memc_get(key=mk)
         logger.debug("sleep..")
         time.sleep(sleep_time)
