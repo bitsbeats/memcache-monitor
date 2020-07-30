@@ -8,13 +8,24 @@ services:
     image: prom/prometheus
     command:
       - --config.file=/etc/prometheus/prometheus.yml
-  graph:
+  grafana:
+    links:
+      - "prom:${PROMSERVICE}"
     image: grafana/grafana
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAPHANAPW}
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - PROMSERVICE=${PROMSERVICE}
+      - PROMPORT=${PROMPORT}
+    volumes:
+      - "${PWD}/grafana_datasource.yaml:/etc/grafana/provisioning/datasources/grafana_datasource.yaml"
+      - "${PWD}/grafana_dashboard.yaml:/etc/grafana/provisioning/dashboards/grafana_dashboard.yaml"
+      - "${PWD}/grafana_dashboard.json:/etc/dashboards/grafana_dashboard.json"
     ports:
-      - "127.0.0.1:${GRAPHANAPORT}:${GRAPHANAPORT}"
+      - "127.0.0.1:${GRAFANAPORT}:${GRAFANAPORT}"
   memcachemon:
+    links:
+      - "memcached:${MEMCACHEDSERVICE}"
     build:
       context: .
       dockerfile: Dockerfile
@@ -23,7 +34,7 @@ services:
     command:
       - -v
     environment:
-      - MEMCACHEADDRESS=${MEMCACHEADDRESS}
+      - MEMCACHEADDRESS=${MEMCACHEDSERVICE}
       - MEMCACHEPORT=${MEMCACHEPORT}
       - SLEEP=${SLEEP}
       - METRICSPORT=${METRICSPORT}

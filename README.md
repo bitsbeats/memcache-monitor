@@ -19,13 +19,28 @@ This tool will set and get a configurable key / value to memcache and expose pro
 | -b / --memcachebuckets | MEMCACHEBUCKETS | histogram metric buckets in seconds   | 0.0001, 0.001, 0.01, 0.1, 0.2, 0.4, 0.8, 1, 2, 4, 8 |
 | -v / --verbose         | MEMCACHEMONVERBOSE | verbose logging                    | False |
 
-## running via docker-compose (whole stack with prometheus and graphana)
+## Metrics
+| name | type | unit | desc | 
+|---|---|---|---|
+| memcachemon_request_duration_seconds_bucket | Histogram | seconds | Request time |
+| memcachemon_request_failures_total | Counter | int | Failure counter |
+
+### Labels
+| name | desc |
+|---|---|
+| memcache | value from -m (memcacheaddress) |
+| operation | "get" or "set" |
+
+## Running via docker-compose
+Whole stack with prometheus and grafana.
+
 Modify .env to your needs
 ```
 docker-compose up -d --build
 ```
+Now go to http://127.0.0.1:3000
 
-## running locally
+## Running locally
 
 ```
 git clone <repo>
@@ -35,7 +50,7 @@ pip install -r requirements.txt
 python memcache-mon.py -h
 ```
 
-## running via docker
+## Running via docker
 
 ```
 # pull
@@ -50,3 +65,6 @@ docker run -rm -e SLEEP=0.1 bitsbeats/memcache-mon
 # stable
 docker pull bitsbeats/memcache-mon:<github-tag eg. 0.0.1>
 ```
+
+## Dashboard Screenshot
+![](dashboard.png)
