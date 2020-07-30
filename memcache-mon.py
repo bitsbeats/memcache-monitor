@@ -58,18 +58,18 @@ request_time_set = REQUEST_TIME.labels(operation="set", memcache=mc)
 def memc_get(key):
     try:
         client.get(key)
-    except Exception:
+    except Exception as error:
         REQUEST_FAIL.labels(operation="get", memcache=mc).inc()
-        logger.warning("Error on mc get")
+        logger.warning("Error on mc get: %s", error)
 
 # set func with decorator
 @request_time_set.time()
 def memc_set(key, value):
     try:
         client.set(key, value)
-    except Exception:
+    except Exception as error:
         REQUEST_FAIL.labels(operation="set", memcache=mc).inc()
-        logger.warning("Error on mc set")
+        logger.warning("Error on mc set: %s", error)
 
 # loggin stuff..
 class CustomFormatter(logging.Formatter):
