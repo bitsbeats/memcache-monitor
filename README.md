@@ -16,7 +16,14 @@ This tool will set and get a configurable key / value to memcache and expose pro
 | -p / --memcacheport    | MEMCACHEPORT    | memcache port                         | 11211 |
 | -mk / --memcachekey    | MEMCACHEKEY     | memcache key                          | memcache-mon |
 | -mv / --memcachevalue  | MEMCACHEVALUE   | memcache value                        | memcache-val |
+| -b / --memcachebuckets | MEMCACHEBUCKETS | histogram metric buckets in seconds   | 0.0001, 0.001, 0.01, 0.1, 0.2, 0.4, 0.8, 1, 2, 4, 8 |
 | -v / --verbose         | MEMCACHEMONVERBOSE | verbose logging                    | False |
+
+## running via docker-compose (whole stack with prometheus and graphana)
+Modify .env to your needs
+```
+docker-compose up -d --build
+```
 
 ## running locally
 

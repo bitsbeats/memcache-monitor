@@ -1,0 +1,8 @@
+# Ignore everything
+**
+
+# Allow files and directories
+!memcache-mon.py
+!README.md
+!requirements.txt
+!LICENSE

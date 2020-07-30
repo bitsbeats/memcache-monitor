@@ -1,0 +1,35 @@
+version: '3'
+services:
+  prom:
+    ports:
+      - "127.0.0.1:${PROMPORT}:${PROMPORT}"
+    volumes:
+      - "${PWD}/prometheus.yml:/etc/prometheus/prometheus.yml"
+    image: prom/prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+  graph:
+    image: grafana/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAPHANAPW}
+    ports:
+      - "127.0.0.1:${GRAPHANAPORT}:${GRAPHANAPORT}"
+  memcachemon:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:${METRICSPORT}:${METRICSPORT}"
+    command:
+      - -v
+    environment:
+      - MEMCACHEADDRESS=${MEMCACHEADDRESS}
+      - MEMCACHEPORT=${MEMCACHEPORT}
+      - SLEEP=${SLEEP}
+      - METRICSPORT=${METRICSPORT}
+  memcached:
+    image: memcached
+    ports:
+      - "127.0.0.1:${MEMCACHEPORT}:${MEMCACHEPORT}"
+    command:
+      - -vv
